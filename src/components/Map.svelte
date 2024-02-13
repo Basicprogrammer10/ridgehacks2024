@@ -1,37 +1,44 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import mapboxgl from "mapbox-gl";
-  import "mapbox-gl/dist/mapbox-gl.css";
 
-  import { mapToken } from "../assets/data.json";
+  import Map from "ol/Map";
+  import View from "ol/View";
+  import TileLayer from "ol/layer/Tile";
+  import OSM from "ol/source/OSM";
+  import Overlay from "ol/Overlay";
+  import { fromLonLat } from "ol/proj";
 
-  let mapContainer: any;
-
-  mapboxgl.accessToken = mapToken;
-  const navigation = new mapboxgl.NavigationControl();
-  const geolocateControls = new mapboxgl.GeolocateControl({
-    positionOptions: {
-      enableHighAccuracy: true,
-    },
-    trackUserLocation: true,
-    showUserHeading: true,
-  });
+  const center = fromLonLat([-74.5465931, 40.6943]);
+  let mapTarget: HTMLElement;
 
   onMount(() => {
-    const map = new mapboxgl.Map({
-      container: mapContainer,
-      style: "mapbox://styles/alphonse5/cleqda8m0003y01qlfhr22bgh",
-      center: [-74.5465931, 40.6948376],
-      zoom: 18,
+    const map: Map = new Map({
+      target: mapTarget,
+      layers: [
+        new TileLayer({
+          source: new OSM({
+            attributions: [],
+          }),
+        }),
+      ],
+      view: new View({
+        center,
+        zoom: 17,
+      }),
+      overlays: [
+        new Overlay({
+          position: fromLonLat([-74.5465931, 40.6948376]),
+          positioning: "center-center",
+          stopEvent: false,
+          element: document.getElementById("test") ?? undefined,
+        }),
+      ],
     });
-
-    map.addControl(geolocateControls);
-    map.addControl(navigation);
-    map.scrollZoom.disable();
   });
 </script>
 
-<div class="map" bind:this={mapContainer} />
+<div class="map" bind:this={mapTarget} />
+<div id="test">hi</div>
 
 <style>
   .map {
